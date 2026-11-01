@@ -1,30 +1,14 @@
 import mongoose from "mongoose";
 
-const urlSchema = new mongoose.Schema({
-  shortId: {
-    type: String,
-    required: true,
-    unique: true,
+const urlSchema = new mongoose.Schema(
+  {
+    shortId: { type: String, required: true, unique: true },
+    redirectURL: { type: String, required: true },
+    totalClicks: { type: Number, default: 0 },
+    visitHistory: [{ timestamp: { type: Number } }],
   },
-  redirectUrl: {
-    type: String,
-    required: true,
-  },
-  totalClicks: {
-    type: Number,
-    default: 0,
-  },
-  visitHistory: [
-    {
-      timestamp: {
-        type: Number,
-      },
-    },
-    {
-      timestamps: true,
-    },
-  ],
-});
+  { timestamps: true },
+);
 
 const URL = mongoose.model("URL", urlSchema);
 export default URL;

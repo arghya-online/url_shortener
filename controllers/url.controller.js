@@ -1,27 +1,41 @@
-import { nanoid } from "nanoid";
+import shortid from "shortid";
 import URL from "../models/url.model.js";
 
-/**
- * Generates a new short URL
- * @param {import("express").Request} req - The request object
- * @param {import("express").Response} res - The response object
- * @returns {Promise<import("express").Response>}
- */
+async function handleGenerateNewShortURL(req, res) {
+  const { url } = req.body ?? {};
 
-async function handleGenerateNewSHortURL(req, res) {
-  const shortId = nanoid(8);
-  const body = req.body; //user input url
-
-  if (!body.url) {
+  if (!url) {
     return res.status(400).json({ error: "URL is required" });
   }
-  await URL.create({
-    shortId: shortId,
-    redirectURL: body.url, //user input url
-    visitedHistory: [],
-  });
 
-  return res.status(201).json({ id: shortId });
+  try {
+    const shortId = shortid.generate();
+
+    await URL.create({
+      shortId,
+      redirectURL: url,
+      visitHistory: [],
+    });
+
+    return res.status(201).json(`${shortId}`);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "Could not create short URL" });
+  }
 }
 
-export default handleGenerateNewSHortURL;
+async function handleGetAnalytics(req, res) {
+  const { shortId } = req.params;
+  const url = await URL.findOne({ shortId });
+  if (!url) {
+    return res.status(404).json({ error: "Short URL not found" });
+  }
+  return res.status(200).json({
+    totalClicks: results.visitHistory.length,
+    analytics: results.visitHistory.map((visit) => ({
+      timestamp: visit.timestamp,
+    })),
+  });
+}
+
+export default handleGenerateNewShortURL;
